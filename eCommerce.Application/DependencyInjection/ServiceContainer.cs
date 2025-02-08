@@ -1,14 +1,13 @@
 ﻿using eCommerce.Application.Mapping;
 using eCommerce.Application.Services.Implementations;
+using eCommerce.Application.Services.Implementations.Authentication;
 using eCommerce.Application.Services.Interfaces;
+using eCommerce.Application.Services.Interfaces.Authentication;
+using eCommerce.Application.Validations;
+using eCommerce.Application.Validations.Authentication;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace eCommerce.Application.DependencyInjection
 {
     public static class ServiceContainer
@@ -18,6 +17,10 @@ namespace eCommerce.Application.DependencyInjection
             services.AddAutoMapper(typeof(MappingConfig));
             services.AddScoped<IProductService, ProductService>();
             services.AddScoped<CategoryService , CategoryService>();
+            services.AddFluentValidationAutoValidation();
+            services.AddValidatorsFromAssemblyContaining<CreateUserValidator>();
+            services.AddScoped<IValidationService , ValidationService>();
+            services.AddScoped<IAuthenticationService, AuthenticationService>();
             return services;
         }
     }

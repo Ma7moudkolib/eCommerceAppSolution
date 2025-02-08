@@ -1,13 +1,9 @@
 ﻿using AutoMapper;
 using eCommerce.Application.DTOs.Category;
+using eCommerce.Application.DTOs.Identity;
 using eCommerce.Application.DTOs.Product;
 using eCommerce.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+using eCommerce.Domain.Entities.Identity;
 namespace eCommerce.Application.Mapping
 {
     public class MappingConfig : Profile
@@ -16,6 +12,8 @@ namespace eCommerce.Application.Mapping
         {
             CreateMap<CreateCategory , Category>().ReverseMap();
             CreateMap<CreateProduct , Product>().ReverseMap();
+            CreateMap<AppUser, CreateUser >().ReverseMap();
+            CreateMap<AppUser, LoginUser>().ReverseMap();
         }
     }
 }

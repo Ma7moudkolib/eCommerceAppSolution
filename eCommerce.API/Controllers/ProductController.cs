@@ -26,19 +26,19 @@ namespace eCommerce.API.Controllers
         public async Task<IActionResult> Add(CreateProduct Product)
         {
             var result = await productService.AddAsync(Product);
-            return result.Succes ? Ok(result) : BadRequest(result);
+            return result.Success ? Ok(result) : BadRequest(result);
         }
         [HttpPut("update")]
         public async Task<IActionResult> Update(UpdateProduct Product)
         {
             var result = await productService.UpdateAsync(Product);
-            return result.Succes ? Ok(result) : BadRequest(result);
+            return result.Success ? Ok(result) : BadRequest(result);
         }
         [HttpDelete("delete/{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
             var result = await productService.DeleteAsync(id);
-            return result.Succes ? Ok(result) : BadRequest(result);
+            return result.Success ? Ok(result) : BadRequest(result);
         }
 
 
