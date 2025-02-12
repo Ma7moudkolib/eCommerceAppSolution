@@ -7,9 +7,6 @@ using eCommerce.Application.Validations;
 using eCommerce.Domain.Entities.Identity;
 using eCommerce.Domain.Interfaces.Authentication;
 using FluentValidation;
-using Microsoft.AspNetCore.Components.Forms;
-using System.Net.WebSockets;
-
 namespace eCommerce.Application.Services.Implementations.Authentication
 {
     public class AuthenticationService(IUserManagement userManagement
@@ -36,8 +33,8 @@ namespace eCommerce.Application.Services.Implementations.Authentication
                 return new ServiceResponse { message = "Email Address maigh be is already in use or unknown error occurred."};
             }
             var _user = await userManagement.GetUserByEmail(createUser.Email);
-            var _users = await userManagement.GetAllUsers();
-            bool assignResult = await roleManagement.AddUserToRole(_user!, _users!.Count() > 1 ? "User" : "Admin");
+           // var _users = await userManagement.GetAllUsers();
+            bool assignResult = await roleManagement.AddUserToRole(_user!, createUser.Role);
             if (!assignResult)
             {
                 //remove user 

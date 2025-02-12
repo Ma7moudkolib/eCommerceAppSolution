@@ -1,12 +1,16 @@
-﻿using eCommerce.Application.Services.Interfaces.Logging;
+﻿using eCommerce.Application.Services.Interfaces.Cart;
+using eCommerce.Application.Services.Interfaces.Logging;
 using eCommerce.Domain.Entities;
+using eCommerce.Domain.Entities.Cart;
 using eCommerce.Domain.Entities.Identity;
 using eCommerce.Domain.Interfaces;
 using eCommerce.Domain.Interfaces.Authentication;
+using eCommerce.Domain.Interfaces.Cart;
 using eCommerce.Infrastructure.Data;
 using eCommerce.Infrastructure.Middleware;
 using eCommerce.Infrastructure.Repositories;
 using eCommerce.Infrastructure.Repositories.Authentication;
+using eCommerce.Infrastructure.Repositories.Cart;
 using eCommerce.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -34,6 +38,9 @@ namespace eCommerce.Infrastructure.DependencyInjection
             services.AddScoped<IGenericRepository<Product>, GenericRepository<Product>>();
             services.AddScoped<IGenericRepository<Category>, GenericRepository<Category>>();
             services.AddScoped(typeof( IAppLogger<>), typeof( SerilogLoggerAdapter<>));
+            services.AddScoped<IPaymentMethod, PaymentMethodRepository>();
+            services.AddScoped<IPaymentService , StripePaymentService>();
+            services.AddScoped<ICart, CartRepository>();
 
             services.AddDefaultIdentity<AppUser>(options =>
             {
@@ -70,7 +77,7 @@ namespace eCommerce.Infrastructure.DependencyInjection
             services.AddScoped<IRoleManagement, RoleManagement>();
             services.AddScoped<IUserManagement, UserManagement>();
             services.AddScoped<ITokenManagement, TokenManagement>();
-
+            Stripe.StripeConfiguration.ApiKey = config["Stripe:SecretKey"];
             return services;
         }
         public static IApplicationBuilder UseInfrastructureService(this IApplicationBuilder app)

@@ -15,5 +15,7 @@ namespace eCommerce.Domain.Entities
         public int Quantity { get; set; }
         public Category? Category { get; set; }
         public Guid CategoryId { get; set; }
+     
+
     }
 }
