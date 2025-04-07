@@ -17,7 +17,7 @@ namespace eCommerce.API.Controllers
         public async Task<IActionResult> GetSingle(Guid id)
         {
             var data = await categoryService.GetByIdAsync(id);
-            return data == null ? Ok(data) : NotFound(data);
+            return data != null ? Ok(data) : NotFound(data);
         }
         [HttpPost("add")]
         public async Task<IActionResult> Add(CreateCategory category)
@@ -36,6 +36,12 @@ namespace eCommerce.API.Controllers
         {
             var result = await categoryService.DeleteAsync(id);
             return result.Success ? Ok(result) : BadRequest(result);
+        }
+        [HttpGet("products-by-category/{categoryId}")]
+        public async Task<IActionResult> GetProductsByCategory(Guid categoryId)
+        {
+            var products = await categoryService.GetProductsByCategory(categoryId);
+            return products.Any()? Ok(products) : NotFound();
         }
     }
 }
