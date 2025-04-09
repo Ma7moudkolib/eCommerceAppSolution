@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using eCommerce.Application.DTOs.Cart;
 using eCommerce.Application.DTOs.Category;
+using eCommerce.Application.DTOs.Favourite;
 using eCommerce.Application.DTOs.Identity;
 using eCommerce.Application.DTOs.Product;
 using eCommerce.Domain.Entities;
@@ -18,6 +19,8 @@ namespace eCommerce.Application.Mapping
             CreateMap<AppUser, LoginUser>().ReverseMap();
             CreateMap<PaymentMethod , GetPaymentMethod>().ReverseMap();
             CreateMap<CreateAchieve , Achieve>().ReverseMap();
+            CreateMap<Favourite,CreateFavourite>().ReverseMap();
+            CreateMap<Favourite,GetFavorite>().ReverseMap();
         }
     }
 }
