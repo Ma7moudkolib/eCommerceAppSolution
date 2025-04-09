@@ -9,7 +9,7 @@ namespace eCommerce.API.Controllers.Cart
     [ApiController]
     public class CartController(ICartService cartService) : ControllerBase
     {
-        [HttpPost]
+        [HttpPost("checkout")]
         public async Task<IActionResult> Checkout(Checkout checkout)
         {
             if (!ModelState.IsValid)
@@ -19,7 +19,7 @@ namespace eCommerce.API.Controllers.Cart
             var result = await cartService.Checkout(checkout);
             return result.Success? Ok(result) : BadRequest(result);
         }
-        [HttpPost]
+        [HttpPost("savecheckout")]
         public async Task<IActionResult> SaveCheckout(IEnumerable<CreateAchieve> achieves)
         {
             var result = await cartService.SaveCheckoutHistory(achieves);
