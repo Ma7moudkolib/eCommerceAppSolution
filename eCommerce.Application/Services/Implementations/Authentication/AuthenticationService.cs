@@ -30,7 +30,8 @@ namespace eCommerce.Application.Services.Implementations.Authentication
             var result = await userManagement.CreateUser(mappedModel);
             if(!result)
             {
-                return new ServiceResponse { message = "Email Address maigh be is already in use or unknown error occurred."};
+                return new ServiceResponse
+                { message = "Email Address maigh be is already in use or unknown error occurred."};
             }
             var _user = await userManagement.GetUserByEmail(createUser.Email);
            // var _users = await userManagement.GetAllUsers();
