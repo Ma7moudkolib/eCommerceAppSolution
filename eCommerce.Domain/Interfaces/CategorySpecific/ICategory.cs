@@ -2,7 +2,7 @@
 
 namespace eCommerce.Domain.Interfaces.CategorySpecific
 {
-    public interface ICategory
+    public interface ICategory : IGenericRepository<Category>
     {
         Task<IEnumerable<Product>> GetProductsByCategory(Guid categoryId);
     }

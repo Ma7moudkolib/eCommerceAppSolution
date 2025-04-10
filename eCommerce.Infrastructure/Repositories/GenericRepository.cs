@@ -5,40 +5,41 @@ using Microsoft.EntityFrameworkCore;
 
 namespace eCommerce.Infrastructure.Repositories
 {
-    public class GenericRepository<TEntity>(AppDbContext context ): IGenericRepository<TEntity> where TEntity : class
+    public class GenericRepository<TEntity>(AppDbContext _context): IGenericRepository<TEntity> where TEntity : class
     {
-        public async Task<int> AddAsync(TEntity entity)
+       
+        public async Task AddAsync(TEntity entity)
         {
-            context.Set<TEntity>().Add( entity );
-            return await context.SaveChangesAsync();
+            await _context.Set<TEntity>().AddAsync( entity );
+           // return await _context.SaveChangesAsync();
         }
 
-        public async Task<int> DeleteAsync(Guid Id)
+        public async Task DeleteAsync(Guid Id)
         {
-            var entity = await context.Set<TEntity>().FindAsync( Id );
+            var entity = await _context.Set<TEntity>().FindAsync( Id );
             if (entity == null)
             {
                 throw new ItemNotFoundException($"Item With {Id} Not Found");
             }
-            context.Set<TEntity>().Remove(entity);
-            return await context.SaveChangesAsync();
+            _context.Set<TEntity>().Remove( entity );
+          //  return await _context.SaveChangesAsync();
         }
 
         public async Task<IEnumerable<TEntity>> GetAllAsync()
         {
-            return await context.Set<TEntity>().AsNoTracking().ToListAsync();
+            return await _context.Set<TEntity>().AsNoTracking().ToListAsync();
         }
 
         public async Task<TEntity> GetByIdAsync(Guid id)
         {
-            var result = await context.Set<TEntity>().FindAsync(id);
+            var result = await _context.Set<TEntity>().FindAsync(id);
             return result!;
         }
 
-        public async Task<int> UpdateAsync(TEntity entity)
+        public void UpdateAsync(TEntity entity)
         {
-            context.Set<TEntity>().Update(entity);
-            return await context.SaveChangesAsync();
+            _context.Set<TEntity>().Update(entity);
+           // return await _context.SaveChangesAsync();
         }
     }
 }

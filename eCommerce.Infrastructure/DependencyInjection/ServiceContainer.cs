@@ -6,6 +6,7 @@ using eCommerce.Domain.Interfaces;
 using eCommerce.Domain.Interfaces.Authentication;
 using eCommerce.Domain.Interfaces.Cart;
 using eCommerce.Domain.Interfaces.CategorySpecific;
+using eCommerce.Domain.Interfaces.UnitOfWork;
 using eCommerce.Infrastructure.Data;
 using eCommerce.Infrastructure.Middleware;
 using eCommerce.Infrastructure.Repositories;
@@ -21,6 +22,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using eCommerce.Infrastructure.UnitOfWorks;
 namespace eCommerce.Infrastructure.DependencyInjection
 {
     public static class ServiceContainer
@@ -36,15 +38,15 @@ namespace eCommerce.Infrastructure.DependencyInjection
                     sqlOptions.EnableRetryOnFailure();
                 }),
                 ServiceLifetime.Scoped);
-            services.AddScoped<IGenericRepository<Product>, GenericRepository<Product>>();
-            services.AddScoped<IGenericRepository<Category>, GenericRepository<Category>>();
-            services.AddScoped<IGenericRepository<Favourite>, GenericRepository<Favourite>>();
+            //services.AddScoped<IGenericRepository<Product>, GenericRepository<Product>>();
+            //services.AddScoped<IGenericRepository<Category>, GenericRepository<Category>>();
+            //services.AddScoped<IGenericRepository<Favourite>, GenericRepository<Favourite>>();
+            //services.AddScoped<ICategory,CategoryRepository>();
             services.AddScoped(typeof( IAppLogger<>), typeof( SerilogLoggerAdapter<>));
             services.AddScoped<IPaymentMethod, PaymentMethodRepository>();
             services.AddScoped<IPaymentService , StripePaymentService>();
             services.AddScoped<ICart, CartRepository>();
-            services.AddScoped<ICategory,CategoryRepository>();
-
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddDefaultIdentity<AppUser>(options =>
             {
                 options.SignIn.RequireConfirmedEmail = true;
