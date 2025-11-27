@@ -2,11 +2,10 @@
 using System.ComponentModel.DataAnnotations;
 namespace eCommerce.Application.DTOs.Category
 {
-    public class GetCategory : CategoryBase
+    public record GetCategory 
     {
-        [Required]
-        public Guid Id { get; set; }
-        public ICollection<GetProduct>? Products { get; set; }
+        public int Id { get; set; }
+        public string Name { get; set; }
     }
 }
 

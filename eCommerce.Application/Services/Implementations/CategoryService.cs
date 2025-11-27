@@ -10,83 +10,73 @@ using eCommerce.Domain.Interfaces.UnitOfWork;
 
 namespace eCommerce.Application.Services.Implementations
 {
-    public class CategoryService( IMapper mapper , IUnitOfWork unitOfWork ) : ICategoryService
+    public class CategoryService : ICategoryService
     {
-        public async Task<ServiceResponse> AddAsync(CreateCategory category)
+        private readonly IRepositoryManager _repositoryManager;
+        private readonly IMapper _mapper;
+        public CategoryService(IRepositoryManager repositoryManager , IMapper mapper)
         {
-            var MapingCategory = mapper.Map<Category>(category);
-           // var result = await genericRepository.AddAsync(MapingCategory);
-             await unitOfWork.Categories.AddAsync(MapingCategory);
-            var result = await unitOfWork.CompleteAsync();
-            if (result > 0)
-            {
-                return new ServiceResponse(true, "Category is Added");
-            }
-            unitOfWork.Dispose();
-            return new ServiceResponse(true, "Fail to Added Category!");
+            _repositoryManager = repositoryManager;
+            _mapper = mapper;
+        }
+        public async Task<ServiceResponse> AddCategoryAsync(CreateCategory category , CancellationToken cancellationToken=default)
+        {
+            var categoryEntity = _mapper.Map<Category>(category);
+            
+            _repositoryManager.Categorie.CreateCategory(categoryEntity);
+            var result = await _repositoryManager.CompleteAsync(cancellationToken);
+           
+            return result > 0 ? new ServiceResponse(true, "Category is Added"):
+                new ServiceResponse(true, "Fail to Added Category!");
         }
 
-        public async Task<ServiceResponse> DeleteAsync(Guid Id)
+        public async Task<ServiceResponse> DeleteCategoryAsync(int Id , CancellationToken cancellationToken=default)
         {
-           // var result = await genericRepository.DeleteAsync(Id);
-            await unitOfWork.Categories.DeleteAsync(Id);
-            var result = await unitOfWork.CompleteAsync();
-            if (result > 0)
-            {
-                return new ServiceResponse(true, "Category deleted");
-            }
-            unitOfWork.Dispose();
-            return new ServiceResponse(false, "Faild to delete Category");
+            var category = await _repositoryManager.Categorie.GetCategoryById(Id,false);
+            if (category is null)
+                return new ServiceResponse(false, "this category not found");
+
+            _repositoryManager.Categorie.DeleteCategory(category);
+            var result = await _repositoryManager.CompleteAsync(cancellationToken);
+           
+                return result > 0 ?  new ServiceResponse(true, "Category deleted"):
+                 new ServiceResponse(false, "Faild to delete Category");
         }
 
-        public async Task<IEnumerable<GetCategory>> GetAllAsync()
+        public async Task<IEnumerable<GetCategory>> GetAllCategoryAsync()
         {
-         // var category = await genericRepository.GetAllAsync();
-         var category = await unitOfWork.Categories.GetAllAsync();
+            var categories = await _repositoryManager.Categorie.GetAllCategories(false);
 
-            if (!category.Any())
-            {
+            if (!categories.Any())
                 return [];
-            }
-            var result = mapper.Map<IEnumerable<GetCategory>>(category);
+            
+            var result = _mapper.Map<IEnumerable<GetCategory>>(categories);
             return result;
-
         }
 
-        public async Task<GetCategory> GetByIdAsync(Guid id)
+        public async Task<GetCategory> GetCategoryByIdAsync(int id)
         {
-            //var category = await genericRepository.GetByIdAsync(id);
-            var category = await unitOfWork.Categories.GetByIdAsync(id);
+           
+            var category = await _repositoryManager.Categorie.GetCategoryById(id, false);
             if (category == null)
-            {
                 return new GetCategory();
-            }
-            var result = mapper.Map<GetCategory>(category);
+            
+            var result = _mapper.Map<GetCategory>(category);
             return result;
 
         }
 
-        public async Task<IEnumerable<GetProduct>> GetProductsByCategory(Guid categoryId)
+        public async Task<ServiceResponse> UpdateAsync(UpdateCategory category , CancellationToken cancellationToken=default)
         {
-            //var products = await categorySpecific.GetProductsByCategory(categoryId);
-            var products = await unitOfWork.Categories.GetProductsByCategory(categoryId);
-            if(!products.Any())
-            {
-                return [];
-            }
-            return mapper.Map<IEnumerable<GetProduct>>(products);
-        }
+          var categoryEntity = await _repositoryManager.Categorie.GetCategoryById(category.Id, true);
+            if (categoryEntity is null)
+                return new ServiceResponse(false, "this category not found");
+            categoryEntity.Name = category.Name;
+            _repositoryManager.Categorie.UpdateCategory(categoryEntity);
+            var result = await _repositoryManager.CompleteAsync(cancellationToken);
 
-        public async Task<ServiceResponse> UpdateAsync(UpdateCategory category)
-        {
-            var MapingCategory = mapper.Map<Category>(category);
-            //var result = await genericRepository.UpdateAsync(MapingCategory);
-            unitOfWork.Categories.UpdateAsync(MapingCategory);
-            var result = await unitOfWork.CompleteAsync();
-            if (result > 0)
-                return new ServiceResponse(true, "Updated Category!");
-            unitOfWork.Dispose();
-            return new ServiceResponse(true, "Fail to Update Category");
+            return result > 0 ? new ServiceResponse(true, "Category is Updated") :
+             new ServiceResponse(false, "Faild to update Category");
         }
     }
 }

@@ -7,7 +7,7 @@ using eCommerce.Domain.Interfaces;
 using eCommerce.Domain.Interfaces.UnitOfWork;
 namespace eCommerce.Application.Services.Implementations
 {
-    public class ProductService: IProductService
+    public sealed class ProductService: IProductService
     {
         private readonly IRepositoryManager _repositoryManager;
         private readonly IMapper _mapper;
@@ -54,7 +54,7 @@ namespace eCommerce.Application.Services.Implementations
 
         }
 
-        public async Task<IEnumerable<GetProduct>> GetProductByCategoryIdAsync(int categoryId)
+        public async Task<IEnumerable<GetProduct>> GetProductsByCategoryIdAsync(int categoryId)
         {
            var products = await _repositoryManager.Product.GetProductsByCategory(categoryId, false);
             if (!products.Any())

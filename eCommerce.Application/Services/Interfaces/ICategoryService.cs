@@ -6,12 +6,12 @@ namespace eCommerce.Application.Services.Interfaces
 {
     public interface ICategoryService
     {
-        Task<ServiceResponse> AddAsync(CreateCategory category);
-        Task<ServiceResponse> UpdateAsync(UpdateCategory category);
-        Task<ServiceResponse> DeleteAsync(Guid Id);
-        Task<IEnumerable<GetCategory>> GetAllAsync();
-        Task<GetCategory> GetByIdAsync(Guid id);
-        Task<IEnumerable<GetProduct>> GetProductsByCategory(Guid categoryId);
+        Task<ServiceResponse> AddCategoryAsync(CreateCategory category, CancellationToken cancellationToken=default);
+        Task<ServiceResponse> UpdateCategoryAsync(UpdateCategory category , CancellationToken cancellationToken=default);
+        Task<ServiceResponse> DeleteCategoryAsync(int Id , CancellationToken cancellationToken=default);
+        Task<IEnumerable<GetCategory>> GetAllCategoryAsync();
+        Task<GetCategory> GetCategoryByIdAsync(int id);
+        
     }
    
 }
