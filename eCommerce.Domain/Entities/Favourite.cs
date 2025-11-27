@@ -1,16 +1,17 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using eCommerce.Domain.Entities.Identity;
+using System.ComponentModel.DataAnnotations;
 
 namespace eCommerce.Domain.Entities
 {
     public class Favourite
     {
         [Key]
-        public Guid Id { get; set; } = Guid.NewGuid();
+        public int Id { get; set; } 
         [Required]
-        public Guid ProductId { get; set; }
         public string? UserId { get; set; }
-        public DateTime CreatedData { get; set; } = DateTime.Now;
-        Product? Product { get; set; }
+        public DateTime CreatedData { get; set; }= DateTime.Now;
+        public ICollection<Product>? Products { get; set; }
+        public AppUser? User { get; set; }
 
     }
 }
