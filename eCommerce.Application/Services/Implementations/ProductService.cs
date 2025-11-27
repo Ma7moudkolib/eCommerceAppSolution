@@ -7,72 +7,83 @@ using eCommerce.Domain.Interfaces;
 using eCommerce.Domain.Interfaces.UnitOfWork;
 namespace eCommerce.Application.Services.Implementations
 {
-    public class ProductService(IUnitOfWork unitOfWork , IMapper mapper ) : IProductService
+    public class ProductService: IProductService
     {
+        private readonly IRepositoryManager _repositoryManager;
+        private readonly IMapper _mapper;
+
+        public ProductService(IRepositoryManager repositoryManager , IMapper mapper )
+        {
+            _repositoryManager = repositoryManager;
+            _mapper = mapper;
+        }
+        public async Task<ServiceResponse> AddProductAsync(CreateProduct product , CancellationToken cancellationToken)
+        {
+            var productEntity = _mapper.Map<Product>( product );
+          
+           
+            _repositoryManager.Product.AddProduct(productEntity);
+            var result = await _repositoryManager.CompleteAsync(cancellationToken);
+          
+             return result > 0 ? new ServiceResponse(true, "Product is Added"):
+                           new ServiceResponse(true, "Fail to Added Product!");
+        }
+
+        public async Task<ServiceResponse> DeleteProductAsync(int Id , CancellationToken cancellationToken=default)
+        {
+
+             var product = await _repositoryManager.Product.GetProductByIdAsync(Id, trackChanges: false);
+            if(product is null)
+                return new ServiceResponse(false, "Product not found");
+            _repositoryManager.Product.DeleteProduct(product);
+            var result = await _repositoryManager.CompleteAsync(cancellationToken);
+            return result > 0 ? new ServiceResponse(true, "Product deleted") :
+                           new ServiceResponse(false, "Faild to delete Product");
         
-        public async Task<ServiceResponse> AddAsync(CreateProduct product)
-        {
-            var MapingProduct = mapper.Map<Product>( product );
-           // var result = await genericRepository.AddAsync( MapingProduct );
-            await unitOfWork.Products.AddAsync( MapingProduct );
-            var result= await unitOfWork.CompleteAsync();
-            if (result > 0)
-                return new ServiceResponse(true, "Product is Added");
-            
-            unitOfWork.Dispose();
-            return new ServiceResponse(true, "Fail to Added Product!");
         }
 
-        public async Task<ServiceResponse> DeleteAsync(Guid Id)
+        public async Task<IEnumerable<GetProduct>> GetAllProductAsync()
         {
-          // var result = await genericRepository.DeleteAsync( Id );
-             await unitOfWork.Products.DeleteAsync( Id );
-            var result = await unitOfWork.CompleteAsync();
-            if(result > 0 )
-            {
-                return new ServiceResponse(true, "Product deleted");
-            }
-            unitOfWork.Dispose();
-            return new ServiceResponse(false, "Faild to delete Product");
-        }
-
-        public async Task<IEnumerable<GetProduct>> GetAllAsync()
-        {
-          // var products = await genericRepository.GetAllAsync();
-          var products = await unitOfWork.Products.GetAllAsync();
+           
+          var products = await _repositoryManager.Product.GetAllProductsAsync(false);
             if (!products.Any() )
-            {
                 return [];
-            }
-            var result =  mapper.Map<IEnumerable< GetProduct>>( products );
-            return result;
-
-        }
-
-        public async Task<GetProduct> GetByIdAsync(Guid id)
-        {
-           // var products = await genericRepository.GetByIdAsync(id);
-           var products = await unitOfWork.Products.GetByIdAsync( id );
-            if(products == null)
-            {
-               return new GetProduct();
-            }
-            var result = mapper.Map<GetProduct>(products);
-            return result;
-
-        }
-
-        public async Task<ServiceResponse> UpdateAsync(UpdateProduct product)
-        {
-            var MapingProduct = mapper.Map<Product>(product);
-           // var result = await genericRepository.UpdateAsync(MapingProduct);
-            unitOfWork.Products.UpdateAsync( MapingProduct );
-            var result = await unitOfWork.CompleteAsync();
-            if (result > 0)  
-                return new ServiceResponse(true, "Updated Product!");
             
-            unitOfWork.Dispose();
-            return new ServiceResponse(true, "Fail to Update Product");
+            var result =  _mapper.Map<IEnumerable<GetProduct>>( products );
+            return result;
+
+        }
+
+        public async Task<IEnumerable<GetProduct>> GetProductByCategoryIdAsync(int categoryId)
+        {
+           var products = await _repositoryManager.Product.GetProductsByCategory(categoryId, false);
+            if (!products.Any())
+                return [];
+            var result = _mapper.Map<IEnumerable<GetProduct>>(products);
+            return result;
+        }
+
+        public async Task<GetProduct> GetProductByIdAsync(int id)
+        {
+         
+           var products = await _repositoryManager.Product.GetProductByIdAsync(id, false);
+           if (products is null)
+                return new GetProduct();
+            var result = _mapper.Map<GetProduct>(products);
+            return result;
+
+        }
+
+        public async Task<ServiceResponse> UpdateProductAsync(UpdateProduct product , CancellationToken cancellationToken=default)
+        {
+           var productEntity = await _repositoryManager.Product.GetProductByIdAsync(product.Id, trackChanges: true);
+            if (productEntity is null)
+                return new ServiceResponse(false, "Product not found");
+            _mapper.Map(product, productEntity);
+            _repositoryManager.Product.UpdateProduct(productEntity);
+            var result = await _repositoryManager.CompleteAsync(cancellationToken);
+            return result > 0 ? new ServiceResponse(true, "Product is Updated") :
+                           new ServiceResponse(false, "Fail to Update Product!");
         }
     }
     
