@@ -1,12 +1,15 @@
 ﻿
+using System.Linq.Expressions;
+
 namespace eCommerce.Domain.Interfaces
 {
-    public interface IGenericRepository<TEntity>where TEntity : class
+    public interface IGenericRepository<T>where T : class
     {
-        Task AddAsync(TEntity entity);
-        void UpdateAsync(TEntity entity);
-        Task DeleteAsync(Guid Id);
-        Task<IEnumerable<TEntity>> GetAllAsync();
-        Task<TEntity> GetByIdAsync(Guid id);
+
+        IQueryable<T> FindAll(bool trackChanges);
+        IQueryable<T> FindByCondition(Expression<Func<T, bool>> condition, bool trackChanges);
+        void Create(T entity);
+        void Update(T entity);
+        void Delete(T entity);
     }
 }

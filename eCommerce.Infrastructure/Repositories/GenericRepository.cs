@@ -2,44 +2,26 @@
 using eCommerce.Domain.Interfaces;
 using eCommerce.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
+using System.Security.Principal;
 
 namespace eCommerce.Infrastructure.Repositories
 {
-    public class GenericRepository<TEntity>(AppDbContext _context): IGenericRepository<TEntity> where TEntity : class
+    public abstract class GenericRepository<T>: IGenericRepository<T> where T : class
     {
-       
-        public async Task AddAsync(TEntity entity)
-        {
-            await _context.Set<TEntity>().AddAsync( entity );
-           // return await _context.SaveChangesAsync();
-        }
+        protected readonly AppDbContext _context;
 
-        public async Task DeleteAsync(Guid Id)
-        {
-            var entity = await _context.Set<TEntity>().FindAsync( Id );
-            if (entity == null)
-            {
-                throw new ItemNotFoundException($"Item With {Id} Not Found");
-            }
-            _context.Set<TEntity>().Remove( entity );
-          //  return await _context.SaveChangesAsync();
-        }
+        protected GenericRepository(AppDbContext dbContext)=> _context = dbContext;
 
-        public async Task<IEnumerable<TEntity>> GetAllAsync()
-        {
-            return await _context.Set<TEntity>().AsNoTracking().ToListAsync();
-        }
+        public void Create(T entity) => _context.Set<T>().Add(entity);
+        public void Delete(T entity) => _context?.Set<T>().Remove(entity);
+        public void Update(T entity) => _context.Set<T>().Update(entity);
 
-        public async Task<TEntity> GetByIdAsync(Guid id)
-        {
-            var result = await _context.Set<TEntity>().FindAsync(id);
-            return result!;
-        }
+        public IQueryable<T> FindAll(bool trackChanges) =>
+            !trackChanges ? _context.Set<T>().AsNoTracking()
+            : _context.Set<T>();
 
-        public void UpdateAsync(TEntity entity)
-        {
-            _context.Set<TEntity>().Update(entity);
-           // return await _context.SaveChangesAsync();
-        }
+        public IQueryable<T> FindByCondition(Expression<Func<T, bool>> condition, bool trackChanges) =>
+        !trackChanges ? _context.Set<T>().Where(condition).AsNoTracking() : _context.Set<T>().Where(condition);
     }
 }
