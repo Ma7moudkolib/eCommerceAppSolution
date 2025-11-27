@@ -1,18 +1,11 @@
 ﻿using eCommerce.Application.Services.Interfaces.Cart;
 using eCommerce.Application.Services.Interfaces.Logging;
-using eCommerce.Domain.Entities;
 using eCommerce.Domain.Entities.Identity;
-using eCommerce.Domain.Interfaces;
 using eCommerce.Domain.Interfaces.Authentication;
-using eCommerce.Domain.Interfaces.Cart;
-using eCommerce.Domain.Interfaces.CategorySpecific;
 using eCommerce.Domain.Interfaces.UnitOfWork;
 using eCommerce.Infrastructure.Data;
 using eCommerce.Infrastructure.Middleware;
-using eCommerce.Infrastructure.Repositories;
 using eCommerce.Infrastructure.Repositories.Authentication;
-using eCommerce.Infrastructure.Repositories.Cart;
-using eCommerce.Infrastructure.Repositories.CategorySpecific;
 using eCommerce.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -23,6 +16,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using eCommerce.Infrastructure.UnitOfWorks;
+using Stripe;
 namespace eCommerce.Infrastructure.DependencyInjection
 {
     public static class ServiceContainer
@@ -30,23 +24,37 @@ namespace eCommerce.Infrastructure.DependencyInjection
         public static IServiceCollection AddInfrastructureService
             (this IServiceCollection services, IConfiguration config)
         {
-            string ConnectionString = "eCommerceConnection";
-            services.AddDbContext<AppDbContext>(option => option.UseSqlServer(config.GetConnectionString(ConnectionString),
-                sqlOptions =>
-                {
-                    sqlOptions.MigrationsAssembly(typeof(AppDbContext).Assembly.FullName);
-                    sqlOptions.EnableRetryOnFailure();
-                }),
-                ServiceLifetime.Scoped);
-            //services.AddScoped<IGenericRepository<Product>, GenericRepository<Product>>();
-            //services.AddScoped<IGenericRepository<Category>, GenericRepository<Category>>();
-            //services.AddScoped<IGenericRepository<Favourite>, GenericRepository<Favourite>>();
-            //services.AddScoped<ICategory,CategoryRepository>();
             services.AddScoped(typeof( IAppLogger<>), typeof( SerilogLoggerAdapter<>));
-            services.AddScoped<IPaymentMethod, PaymentMethodRepository>();
             services.AddScoped<IPaymentService , StripePaymentService>();
-            services.AddScoped<ICart, CartRepository>();
-            services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddScoped<IRepositoryManager, RepositoryManager>();
+            services.AddScoped<IRoleManagement, RoleManagement>();
+            services.AddScoped<IUserManagement, UserManagement>();
+            services.AddScoped<ITokenManagement, TokenManagement>();
+
+            services.ConfigureIdentity();
+            services.ConfigureJWT(config);
+            services.ConfigureSqlContext(config);
+
+            services.AddAuthentication().AddGoogle(opthion =>
+            {
+                IConfigurationSection googleAuthSection = config.GetSection("Authentication:Google");
+                opthion.ClientId = googleAuthSection["ClientId"]!;
+                opthion.ClientSecret = googleAuthSection["ClientSecret"]!;
+
+            });
+
+            StripeConfiguration.ApiKey = config["Stripe:SecretKey"];
+            return services;
+        }
+
+        public static IApplicationBuilder UseInfrastructureService(this IApplicationBuilder app)
+        {
+            app.UseMiddleware<ExceptionHandlingMiddleware>();
+            return app;
+        }
+
+        public static void ConfigureIdentity(this IServiceCollection services)
+        {
             services.AddDefaultIdentity<AppUser>(options =>
             {
                 options.SignIn.RequireConfirmedEmail = true;
@@ -58,6 +66,10 @@ namespace eCommerce.Infrastructure.DependencyInjection
                 options.Password.RequireUppercase = true;
                 options.Password.RequiredUniqueChars = 1;
             }).AddRoles<IdentityRole>().AddEntityFrameworkStores<AppDbContext>();
+        }
+
+        public static void ConfigureJWT(this IServiceCollection services, IConfiguration configuration)
+        {
             services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -66,30 +78,33 @@ namespace eCommerce.Infrastructure.DependencyInjection
             }).AddJwtBearer(options =>
             {
                 options.SaveToken = true;
-                options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+                options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = true,
                     ValidateAudience = true,
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
                     RequireExpirationTime = true,
-                    ValidIssuer = config["Jwt:Issuer"],
-                    ValidAudience = config["Jwt:Audience"],
+                    ValidIssuer = configuration["Jwt:Issuer"],
+                    ValidAudience = configuration["Jwt:Audience"],
                     ClockSkew = TimeSpan.Zero,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["Jwt:Key"]!))
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]!))
                 };
             });
-            services.AddScoped<IRoleManagement, RoleManagement>();
-            services.AddScoped<IUserManagement, UserManagement>();
-            services.AddScoped<ITokenManagement, TokenManagement>();
-            Stripe.StripeConfiguration.ApiKey = config["Stripe:SecretKey"];
-            return services;
         }
-        public static IApplicationBuilder UseInfrastructureService(this IApplicationBuilder app)
+
+        public static void ConfigureSqlContext(this IServiceCollection services, IConfiguration configuration)
         {
-            app.UseMiddleware<ExceptionHandlingMiddleware>();
-            return app;
+            string ConnectionString = "eCommerceConnection";
+            services.AddDbContext<AppDbContext>(option => option.UseSqlServer(configuration.GetConnectionString(ConnectionString),
+                sqlOptions =>
+                {
+                    sqlOptions.MigrationsAssembly(typeof(AppDbContext).Assembly.FullName);
+                    sqlOptions.EnableRetryOnFailure();
+                }),
+                ServiceLifetime.Scoped);
         }
+
     }
 }
   
