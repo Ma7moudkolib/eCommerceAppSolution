@@ -2,11 +2,11 @@
 
 namespace eCommerce.Application.DTOs.Product
 {
-    public class ProductBase
+    public record ProductBase
     {
         [Required]
         public string? Name { get; set; }
-        [Required]
+     
         public string? Description { get; set; }
         [Required]
         [DataType(DataType.Currency)]
@@ -16,7 +16,7 @@ namespace eCommerce.Application.DTOs.Product
         [Required]
         public int Quantity { get; set; }
         [Required]
-        public Guid CategoryId { get; set; }
+        public int CategoryId { get; set; }
     }
 }
 

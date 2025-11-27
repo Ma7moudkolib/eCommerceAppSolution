@@ -1,10 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
 namespace eCommerce.Application.DTOs.Product
 {
-    public class UpdateProduct:ProductBase
+    public record UpdateProduct:ProductBase
     {
         [Required]
-        public Guid Id { get; set; }
+        public int Id { get; set; }
  
     }
 }
