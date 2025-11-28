@@ -1,11 +1,9 @@
-﻿using eCommerce.Domain.Entities;
-using eCommerce.Domain.Interfaces;
+﻿using eCommerce.Domain.Interfaces;
 using eCommerce.Domain.Interfaces.Cart;
 using eCommerce.Domain.Interfaces.UnitOfWork;
 using eCommerce.Infrastructure.Data;
 using eCommerce.Infrastructure.Repositories;
 using eCommerce.Infrastructure.Repositories.Cart;
-using eCommerce.Infrastructure.Repositories.FavouriteSpecific;
 namespace eCommerce.Infrastructure.UnitOfWorks
 {
     public class RepositoryManager : IRepositoryManager
@@ -13,7 +11,6 @@ namespace eCommerce.Infrastructure.UnitOfWorks
         private readonly AppDbContext dbContext;
         private readonly  Lazy<IProductRepository>? productRepository;
         private readonly Lazy<ICategory>? categoryRepository;
-        private readonly Lazy<IFavourite>? favouriteRepository;
         private readonly Lazy<ICart>? cartRepository;
         private readonly Lazy<IPaymentMethod>? paymentMethodRepository;
         public RepositoryManager(AppDbContext context)
@@ -21,7 +18,6 @@ namespace eCommerce.Infrastructure.UnitOfWorks
             dbContext = context;
             productRepository = new Lazy<IProductRepository>(() => new ProductRepository(context));
             categoryRepository = new Lazy<ICategory>(() => new CategoryRepository(context));
-            favouriteRepository = new Lazy<IFavourite>(() => new FavouriteRepository(context));
             cartRepository = new Lazy<ICart>(() => new CartRepository(context));
             paymentMethodRepository = new Lazy<IPaymentMethod>(() => new PaymentMethodRepository(context));
         }
@@ -29,8 +25,6 @@ namespace eCommerce.Infrastructure.UnitOfWorks
         public IProductRepository Product => productRepository!.Value;
 
         public ICategory Categorie => categoryRepository!.Value;
-
-        public IFavourite Favorite => favouriteRepository!.Value;
 
         public ICart Cart => cartRepository!.Value;
 

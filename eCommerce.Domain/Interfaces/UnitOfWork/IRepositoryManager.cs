@@ -7,7 +7,6 @@ namespace eCommerce.Domain.Interfaces.UnitOfWork
     {
         IProductRepository Product { get; }
         ICategory Categorie { get; }
-        IFavourite Favorite { get; }
         ICart Cart { get; }
         IPaymentMethod PaymentMethod { get; }
         Task<int> CompleteAsync(CancellationToken cancellationToken);
