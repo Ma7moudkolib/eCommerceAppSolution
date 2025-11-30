@@ -7,10 +7,10 @@ namespace eCommerce.API.Controllers
     [ApiController]
     public class AuthenticationController(IAuthenticationService authenticationService) : ControllerBase
     {
-        [HttpPost("create")]
-        public async Task<IActionResult> CreateUser(CreateUser user)
+        [HttpPost("register")]
+        public async Task<IActionResult> RegisterUser(CreateUser user)
         {
-            var result = await authenticationService.CreateUser(user);
+            var result = await authenticationService.RegisterUser(user);
             if(result.Success)
                 return Ok(result);
             return BadRequest(result);
@@ -18,19 +18,11 @@ namespace eCommerce.API.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> LoginUser(LoginUser user)
         {
-            var result = await authenticationService.LoginUser(user);
-            if (result.Success)
-                return Ok(result);
-            return BadRequest(result);
+            var result = await authenticationService.ValidateUser(user);
+            if (!result.Success)
+                return BadRequest(result);
+            var token = await authenticationService.CreateToken();
+            return Ok(token);
         }
-        [HttpGet("refreshToken/{refreshToken}")]
-        public async Task<IActionResult> ReviveToken(string refreshToken )
-        {
-            var result = await authenticationService.RevivToken(refreshToken);
-            if (result.Success)
-                return Ok(result);
-            return BadRequest(result);
-        }
-
     }
 }

@@ -2,97 +2,88 @@
 using eCommerce.Application.DTOs;
 using eCommerce.Application.DTOs.Identity;
 using eCommerce.Application.Services.Interfaces.Authentication;
-using eCommerce.Application.Services.Interfaces.Logging;
-using eCommerce.Application.Validations;
 using eCommerce.Domain.Entities.Identity;
 using eCommerce.Domain.Interfaces.Authentication;
-using FluentValidation;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 namespace eCommerce.Application.Services.Implementations.Authentication
 {
-    public class AuthenticationService(IUserManagement userManagement
-        , IRoleManagement roleManagement
-        ,ITokenManagement tokenManagement , 
-        IAppLogger<AuthenticationService> logger , IMapper mapper ,IValidator<CreateUser> createUserValidation,
-        IValidator<LoginUser> loginUserValidation,
-        IValidationService validation  ) : IAuthenticationService
+    public class AuthenticationService : IAuthenticationService
     {
-        public async Task<ServiceResponse> CreateUser(CreateUser createUser)
-        {
-            var validationResult = await validation.ValidateAsync(createUser, createUserValidation);
-            if (!validationResult.Success)
-            {
-                return validationResult;
-            }
-            var mappedModel =  mapper.Map<AppUser>(createUser);
-            mappedModel.UserName = createUser.Email;
-            mappedModel.PasswordHash = createUser.Password;
+        private readonly ITokenManagement _tokenManagement;
+        private readonly UserManager<AppUser> _userManager;
+        private readonly IMapper _mapper;
+        private readonly IConfiguration _configuration;
+        private AppUser? _user;
 
-            var result = await userManagement.CreateUser(mappedModel);
-            if(!result)
-            {
-                return new ServiceResponse
-                { message = "Email Address maigh be is already in use or unknown error occurred."};
-            }
-            var _user = await userManagement.GetUserByEmail(createUser.Email);
-           // var _users = await userManagement.GetAllUsers();
-            bool assignResult = await roleManagement.AddUserToRole(_user!, createUser.Role);
-            if (!assignResult)
-            {
-                //remove user 
-                int removeUserResult = await userManagement.RemoveUserByEmail(createUser.Email);
-                if(removeUserResult <= 0)
-                {
-                    // error occuered while rolling back changes
-                    //then log the error 
-                    logger.LogError(new Exception
-                        ($"User with Email as {createUser.Email} falil to be remove as a result of role assigning issue."),
-                        "User could not be assigned Role.");
-                    return new ServiceResponse { message = "Error Occured in Creating Acount" };
-                        
-                }
-            }
-            return new ServiceResponse { Success = true , message = "Account Created!" };
-            //Verify Email 
+        public AuthenticationService(ITokenManagement tokenManagement , UserManager<AppUser> userManager , IMapper mapper ,IConfiguration configuration)
+        {
+            _mapper = mapper;
+            _tokenManagement = tokenManagement;
+            _userManager = userManager;
+            _configuration = configuration;
+        }
+        public async Task<ServiceResponse> RegisterUser(CreateUser createUser)
+        {
+            var userEntity =  _mapper.Map<AppUser>(createUser);
+
+            var result = await _userManager.CreateAsync(userEntity, userEntity.PasswordHash!);
+            if(!result.Succeeded)
+                return new ServiceResponse(false, "Failed while create user, please try later.");
+               
+            return new ServiceResponse { Success = true , message = "Account Created!" }; 
+        }
+        public async Task<LoginResponse> ValidateUser(LoginUser login)
+        {
+             _user = await _userManager.FindByEmailAsync(login.Email!);
+            if (_user is null && await _userManager.CheckPasswordAsync(_user!, _user?.PasswordHash!))
+                return new LoginResponse(massage: $"Authentication failed for user {login.Email}");
+            return new LoginResponse(Success: true);
 
         }
-
-        public async Task<LoginResponse> LoginUser(LoginUser login)
+        public async Task<LoginResponse> CreateToken()
         {
-            var _validationResult = await validation.ValidateAsync( login, loginUserValidation);
-            if(!_validationResult.Success)
-                return new LoginResponse(massage: _validationResult.message);
-            var mappedModel = mapper.Map<AppUser>(login);
-            mappedModel.PasswordHash = login.Password;
-            bool loginResult = await userManagement.LoginUser(mappedModel);
-            if (!loginResult)
-                return new LoginResponse(massage: "Email not found or invalid credentials");
-
-            var _user = await userManagement.GetUserByEmail(login.Email);
-            var claims = await userManagement.GetUserClaims(_user.Email!);
-
-            string jwtToken =  tokenManagement.GenerateToken(claims);
-            string refreshToken = tokenManagement.GetRefreshToken();
-
-            int saveTokenResult = await tokenManagement.AddRefreshToken(_user.Id, refreshToken);
-            return saveTokenResult <= 0 ? new LoginResponse(massage: "Internal error occurred while authentiacatint.") :
-                new LoginResponse(Success: true, Token: jwtToken,refreshToken: refreshToken);
+            var signingCredentials = GetSigningCredentials();
+            var claims = await GetClaims();
+            var tokenOptions = GenerateTokenOptions(signingCredentials, claims);
+            var token = new JwtSecurityTokenHandler().WriteToken(tokenOptions);
+            return new LoginResponse(true, token);
+        }
+        private SigningCredentials GetSigningCredentials()
+        {
+            var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!);
+            var secret = new SymmetricSecurityKey(key);
+            return new SigningCredentials(secret, SecurityAlgorithms.HmacSha256);
         }
 
-        public async Task<LoginResponse> RevivToken(string refreshToken)
+        private async Task<List<Claim>> GetClaims()
         {
-          var validateTokenResult = await tokenManagement.ValidateRefreshToken(refreshToken);
-            if (!validateTokenResult)
-                return new LoginResponse(massage: "Invalid Token");
-
-            string UserId = await tokenManagement.GetUserIdByRefreshToken(refreshToken);
-            var user = await userManagement.GetUserById(UserId);
-
-            var claims = await userManagement.GetUserClaims(user!.Email!);
-            var newJwtToken = tokenManagement.GenerateToken(claims);
-            var newRefreshToken = tokenManagement.GetRefreshToken();
-
-            await tokenManagement.UpdateRefreshToken( newRefreshToken);
-            return new LoginResponse(Success: true, Token: newJwtToken, refreshToken: refreshToken);
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, _user!.UserName!)
+            };
+            var roles = await _userManager.GetRolesAsync(_user!);
+            foreach (var role in roles)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, role));
+            }
+            return claims;
         }
+        private JwtSecurityToken GenerateTokenOptions(SigningCredentials signingCredentials, List<Claim> claims)
+        {
+            var jwtSettings = _configuration.GetSection("Jwt");
+            var tokenOptions = new JwtSecurityToken(
+                issuer: jwtSettings["Issuer"],
+                audience: jwtSettings["Audience"],
+                claims: claims,
+                expires: DateTime.Now.AddMinutes(Convert.ToDouble(jwtSettings["expires"])),
+                signingCredentials: signingCredentials);
+            return tokenOptions;
+        }
+
     }
 }
