@@ -14,16 +14,14 @@ namespace eCommerce.Application.Services.Implementations.Authentication
 {
     public class AuthenticationService : IAuthenticationService
     {
-        private readonly ITokenManagement _tokenManagement;
         private readonly UserManager<AppUser> _userManager;
         private readonly IMapper _mapper;
         private readonly IConfiguration _configuration;
         private AppUser? _user;
 
-        public AuthenticationService(ITokenManagement tokenManagement , UserManager<AppUser> userManager , IMapper mapper ,IConfiguration configuration)
+        public AuthenticationService(UserManager<AppUser> userManager , IMapper mapper ,IConfiguration configuration)
         {
             _mapper = mapper;
-            _tokenManagement = tokenManagement;
             _userManager = userManager;
             _configuration = configuration;
         }
