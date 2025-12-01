@@ -3,7 +3,7 @@ using eCommerce.Application.DTOs.Cart;
 using eCommerce.Application.Services.Interfaces.Cart;
 using eCommerce.Domain.Entities;
 using Stripe.Checkout;
-namespace eCommerce.Infrastructure.Services
+namespace eCommerce.Application.Services.Implementations
 {
     public class StripePaymentService : IPaymentService
     {

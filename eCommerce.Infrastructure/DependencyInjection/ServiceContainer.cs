@@ -1,14 +1,7 @@
-﻿using eCommerce.Application.Services.Interfaces.Cart;
-using eCommerce.Application.Services.Interfaces.Logging;
-using eCommerce.Domain.Entities.Identity;
-using eCommerce.Domain.Interfaces.Authentication;
+﻿using eCommerce.Domain.Entities.Identity;
 using eCommerce.Domain.Interfaces.UnitOfWork;
 using eCommerce.Infrastructure.Data;
-using eCommerce.Infrastructure.Middleware;
-using eCommerce.Infrastructure.Repositories.Authentication;
-using eCommerce.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -24,35 +17,15 @@ namespace eCommerce.Infrastructure.DependencyInjection
         public static IServiceCollection AddInfrastructureService
             (this IServiceCollection services, IConfiguration config)
         {
-            services.AddScoped(typeof( IAppLogger<>), typeof( SerilogLoggerAdapter<>));
-            services.AddScoped<IPaymentService , StripePaymentService>();
             services.AddScoped<IRepositoryManager, RepositoryManager>();
-            services.AddScoped<IRoleManagement, RoleManagement>();
-            services.AddScoped<IUserManagement, UserManagement>();
-            services.AddScoped<ITokenManagement, TokenManagement>();
 
             services.ConfigureIdentity();
             services.ConfigureJWT(config);
             services.ConfigureSqlContext(config);
 
-            services.AddAuthentication().AddGoogle(opthion =>
-            {
-                IConfigurationSection googleAuthSection = config.GetSection("Authentication:Google");
-                opthion.ClientId = googleAuthSection["ClientId"]!;
-                opthion.ClientSecret = googleAuthSection["ClientSecret"]!;
-
-            });
-
             StripeConfiguration.ApiKey = config["Stripe:SecretKey"];
             return services;
         }
-
-        public static IApplicationBuilder UseInfrastructureService(this IApplicationBuilder app)
-        {
-            app.UseMiddleware<ExceptionHandlingMiddleware>();
-            return app;
-        }
-
         public static void ConfigureIdentity(this IServiceCollection services)
         {
             services.AddDefaultIdentity<AppUser>(options =>

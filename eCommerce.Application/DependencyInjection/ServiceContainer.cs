@@ -5,10 +5,11 @@ using eCommerce.Application.Services.Implementations.Cart;
 using eCommerce.Application.Services.Interfaces;
 using eCommerce.Application.Services.Interfaces.Authentication;
 using eCommerce.Application.Services.Interfaces.Cart;
-using eCommerce.Application.Validations;
-using eCommerce.Application.Validations.Authentication;
+using eCommerce.Application.Services.Interfaces.Logging;
+using eCommerce.Infrastructure.Middleware;
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 namespace eCommerce.Application.DependencyInjection
 {
@@ -18,16 +19,17 @@ namespace eCommerce.Application.DependencyInjection
         {
             services.AddAutoMapper(typeof(MappingConfig));
             services.AddScoped<IProductService, ProductService>();
-            services.AddScoped<CategoryService , CategoryService>();
+            services.AddScoped<ICategoryService , CategoryService>();
             services.AddFluentValidationAutoValidation();
-            services.AddValidatorsFromAssemblyContaining<CreateUserValidator>();
-            services.AddScoped<IValidationService , ValidationService>();
             services.AddScoped<IAuthenticationService, AuthenticationService>();
             services.AddScoped<IPaymentMethodService, PaymentMethodService>();
             services.AddScoped<ICartService, CartService>();
-            services.AddScoped<IFavouriteService , FavouriteService>();
+            services.AddScoped(typeof(IAppLogger<>), typeof(SerilogLoggerAdapter<>));
+            services.AddScoped<IPaymentService, StripePaymentService>();
 
             return services;
         }
+        public static IApplicationBuilder UseInfrastructureService(this IApplicationBuilder app) =>
+            app.UseMiddleware<ExceptionHandlingMiddleware>();
     }
 }
