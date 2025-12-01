@@ -1,9 +1,7 @@
-﻿using eCommerce.Application.Exceptions;
-using eCommerce.Domain.Interfaces;
+﻿using eCommerce.Domain.Interfaces;
 using eCommerce.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
-using System.Security.Principal;
 
 namespace eCommerce.Infrastructure.Repositories
 {
