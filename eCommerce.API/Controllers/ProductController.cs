@@ -1,4 +1,5 @@
 ﻿using eCommerce.Application.DTOs.Product;
+using eCommerce.Application.Services.Implementations;
 using eCommerce.Application.Services.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -11,34 +12,40 @@ namespace eCommerce.API.Controllers
     public class ProductController(IProductService productService ) : ControllerBase
     {
         [HttpGet("all")]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetProducts()
         {
-            var data = await productService.GetAllAsync();
+            var data = await productService.GetAllProductAsync();
             return data.Any() ? Ok(data) : NotFound(data);
         }
-        [HttpGet("single/{id}")]
-        public async Task<IActionResult> GetSingle(Guid id )
+        [HttpGet("productById/{id}")]
+        public async Task<IActionResult> GetProduct(int id )
         {
-            var data = await productService.GetByIdAsync(id);
+            var data = await productService.GetProductByIdAsync(id);
             return data == null ? Ok(data) : NotFound(data);
         }
-        [HttpPost("add")]
-        public async Task<IActionResult> Add(CreateProduct Product)
+        [HttpPost("addProduct")]
+        public async Task<IActionResult> AddProduct(CreateProduct Product)
         {
-            var result = await productService.AddAsync(Product);
+            var result = await productService.AddProductAsync(Product);
+            return result.Success? Ok(result) : BadRequest(result);
+        }
+        [HttpPut("updateProduct")]
+        public async Task<IActionResult> UpdateProduct(UpdateProduct Product)
+        {
+            var result = await productService.UpdateProductAsync(Product);
             return result.Success ? Ok(result) : BadRequest(result);
         }
-        [HttpPut("update")]
-        public async Task<IActionResult> Update(UpdateProduct Product)
+        [HttpDelete("deleteProduct/{id}")]
+        public async Task<IActionResult> Delete(int id)
         {
-            var result = await productService.UpdateAsync(Product);
+            var result = await productService.DeleteProductAsync(id);
             return result.Success ? Ok(result) : BadRequest(result);
         }
-        [HttpDelete("delete/{id}")]
-        public async Task<IActionResult> Delete(Guid id)
+        [HttpGet("products-by-category/{categoryId}")]
+        public async Task<IActionResult> GetProductsByCategory(int categoryId)
         {
-            var result = await productService.DeleteAsync(id);
-            return result.Success ? Ok(result) : BadRequest(result);
+            var products = await productService.GetProductsByCategoryIdAsync(categoryId);
+            return products.Any() ? Ok(products) : NotFound();
         }
 
 
