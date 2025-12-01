@@ -9,6 +9,6 @@ namespace eCommerce.Application.Services.Interfaces
         Task<ServiceResponse> DeleteProductAsync(int Id , CancellationToken cancellationToken=default);
         Task<IEnumerable<GetProduct>> GetAllProductAsync();
         Task<GetProduct> GetProductByIdAsync(int id);
-        Task<IEnumerable<GetProduct>> GetProductByCategoryIdAsync(int categoryId);
+        Task<IEnumerable<GetProduct>> GetProductsByCategoryIdAsync(int categoryId);
     }
 }
