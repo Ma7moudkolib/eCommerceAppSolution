@@ -1,11 +1,8 @@
 ﻿using AutoMapper;
 using eCommerce.Application.DTOs;
 using eCommerce.Application.DTOs.Category;
-using eCommerce.Application.DTOs.Product;
 using eCommerce.Application.Services.Interfaces;
 using eCommerce.Domain.Entities;
-using eCommerce.Domain.Interfaces;
-using eCommerce.Domain.Interfaces.CategorySpecific;
 using eCommerce.Domain.Interfaces.UnitOfWork;
 
 namespace eCommerce.Application.Services.Implementations
@@ -66,7 +63,7 @@ namespace eCommerce.Application.Services.Implementations
 
         }
 
-        public async Task<ServiceResponse> UpdateAsync(UpdateCategory category , CancellationToken cancellationToken=default)
+        public async Task<ServiceResponse> UpdateCategoryAsync(UpdateCategory category , CancellationToken cancellationToken=default)
         {
           var categoryEntity = await _repositoryManager.Categorie.GetCategoryById(category.Id, true);
             if (categoryEntity is null)
