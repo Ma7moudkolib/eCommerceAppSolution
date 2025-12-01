@@ -1,19 +1,25 @@
 ﻿using AutoMapper;
 using eCommerce.Application.DTOs.Cart;
 using eCommerce.Application.Services.Interfaces.Cart;
-using eCommerce.Domain.Interfaces.Cart;
 using eCommerce.Domain.Interfaces.UnitOfWork;
 namespace eCommerce.Application.Services.Implementations.Cart
 {
-    public class PaymentMethodService(IUnitOfWork unitOfWork ,IMapper mapper ) : IPaymentMethodService
+    public class PaymentMethodService : IPaymentMethodService
     {
+        private readonly IMapper _mapper;
+        private readonly IRepositoryManager _repositoryManager;
+        public PaymentMethodService(IRepositoryManager repositoryManager , IMapper mapper )
+        {
+            _mapper = mapper;
+            _repositoryManager = repositoryManager;
+        }
         public async Task<IEnumerable<GetPaymentMethod>> GetPaymentMethods()
         {
-           // var methods = await paymentMethod.GetPaymentMethodAsync();
-           var methods = await unitOfWork.paymentMethod.GetPaymentMethodAsync();
+           
+           var methods = await _repositoryManager.PaymentMethod.GetPaymentMethodAsync();
             if (!methods.Any()) { return[];  };
 
-            return  mapper.Map<IEnumerable< GetPaymentMethod>>( methods );
+            return  _mapper.Map<IEnumerable< GetPaymentMethod>>( methods );
         }
     }
 }

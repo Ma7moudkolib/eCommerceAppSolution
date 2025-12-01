@@ -1,8 +1,8 @@
 ﻿namespace eCommerce.Application.DTOs.Cart
 {
-    public class GetPaymentMethod
+    public record GetPaymentMethod
     {
-        public required Guid Id { get; set; }
-        public required string Name { get; set; }
+        public int Id { get; set; }
+        public string Name { get; set; }
     }
 }

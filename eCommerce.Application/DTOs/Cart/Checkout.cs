@@ -1,9 +1,13 @@
-﻿namespace eCommerce.Application.DTOs.Cart
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace eCommerce.Application.DTOs.Cart
 {
     public class Checkout
     {
-        public required Guid ProcessMethodId { get; set; }
-        public required IEnumerable<ProcessCart> Carts { get; set; }
+        [Required]
+        public int ProcessMethodId { get; set; }
+        [Required]
+        public IEnumerable<ProcessCart> Carts { get; set; }
 
     }
 }

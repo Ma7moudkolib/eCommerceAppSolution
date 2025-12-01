@@ -1,15 +1,17 @@
 ﻿using eCommerce.Application.DTOs.Cart;
 using eCommerce.Application.Services.Interfaces.Cart;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace eCommerce.API.Controllers.Cart
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class CartController(ICartService cartService) : ControllerBase
     {
         [HttpPost("checkout")]
+      
         public async Task<IActionResult> Checkout(Checkout checkout)
         {
             if (!ModelState.IsValid)

@@ -7,47 +7,58 @@ using eCommerce.Domain.Entities.Cart;
 using eCommerce.Domain.Interfaces.UnitOfWork;
 namespace eCommerce.Application.Services.Implementations.Cart
 {
-    public class CartService(IMapper mapper , IPaymentService paymentService 
-        , IUnitOfWork unitOfWork) : ICartService
+    public class CartService : ICartService
     {
-        public async Task<ServiceResponse> Checkout(Checkout checkout)
+        private readonly IRepositoryManager _repositoryManager;
+        private readonly IMapper _mapper;
+        private readonly IPaymentService _paymentService;
+        public CartService(IRepositoryManager repositoryManager , IMapper mapper , IPaymentService paymentService)
         {
-            var (products, totalAmount) = await GetTotalAmound(checkout.Carts);
-           // var paymentMethod = await payment.GetPaymentMethods();
-           var paymentMethod = await unitOfWork.paymentMethod.GetPaymentMethodAsync();
-            if (checkout.ProcessMethodId == paymentMethod.FirstOrDefault()!.Id)
+            _mapper = mapper;
+            _repositoryManager = repositoryManager;
+            _paymentService = paymentService;
+        }
+        public async Task<ServiceResponse> Checkout(Checkout checkout,CancellationToken cancellationToken = default)
+        {
+            decimal total = 0;
+            List<Product> itemSelected = new List<Product>();
+            foreach (var item in checkout.Carts)
             {
-                return await paymentService.Pay(totalAmount, products, checkout.Carts);
+                var product = await _repositoryManager.Product.GetProductByIdAsync(item.PoductId, true);
+                if (product is null)
+                    return new ServiceResponse(false, $"The product with Id:{item.PoductId} not available now.");
+
+                if (product.Quantity < item.Quantity)
+                    return new ServiceResponse(false, $"The quantity of product with id:{item.PoductId} not available now.");
+                total += (item.Quantity * item.Price);
+                itemSelected.Add(product);
+                product.Quantity -= item.Quantity;
+                _repositoryManager.Product.UpdateProduct(product);
             }
-            return new ServiceResponse(false, "Invalid Payment Method");
+
+            var paymentMethod = await _repositoryManager.PaymentMethod.GetPaymentMethodAsync();
+            if (checkout.ProcessMethodId != paymentMethod.FirstOrDefault()!.Id)
+                return new ServiceResponse(false, "Invalid Payment Method");
+            var result =  await _paymentService.Pay(total, itemSelected, checkout.Carts);
+            if (result.Success && await _repositoryManager.CompleteAsync(cancellationToken: cancellationToken) > 0)
+                return result;
+            return new ServiceResponse(false, "Payment Failed");
+
+
+
         }
 
-        public async Task<ServiceResponse> SaveCheckoutHistory(IEnumerable<CreateAchieve> achieves)
+        public async Task<ServiceResponse> SaveCheckoutHistory(IEnumerable<CreateAchieve> achieves ,CancellationToken cancellationToken=default)
         {
-            var mapModel = mapper.Map<IEnumerable<Achieve>>(achieves);
-          //  var result =  await cartRepository.SaveCheckoutHistory(mapModel);
-            await unitOfWork.cart.SaveCheckoutHistory(mapModel);
-            var result = await unitOfWork.CompleteAsync();
+            var mapModel = _mapper.Map<IEnumerable<Achieve>>(achieves);
+         
+            await _repositoryManager.Cart.SaveCheckoutHistory(mapModel);
+            var result = await _repositoryManager.CompleteAsync(cancellationToken);
             if (result > 0)
             {   
                 new ServiceResponse(true, "Checkout Achieve");
             }
-            unitOfWork.Dispose();
             return new ServiceResponse(false, "Error occuered in Saving");
-        }
-        private async Task<(IEnumerable<Product> , decimal)> GetTotalAmound(IEnumerable<ProcessCart> carts)
-        {
-            if (!carts.Any()) { return ([], 0); }
-            //var products = await repository.GetAllAsync();
-            var products = await unitOfWork.Products.GetAllAsync();
-            if (!products.Any()) { return ([], 0); }
-
-            var cartsProducts = products.Select(cartItem=> products.FirstOrDefault(p=>p.Id == cartItem.Id))
-                .Where(product=>product != null).ToList();
-            var totalAmount = carts.Where(cartItem => cartsProducts.Any(p => p!.Id == cartItem.PoductId))
-                .Sum(cartItem => cartItem.Quantity * cartsProducts.First(p => p!.Id == cartItem.PoductId)!.Price);
-            return (cartsProducts!, totalAmount);
-
         }
     }
 }

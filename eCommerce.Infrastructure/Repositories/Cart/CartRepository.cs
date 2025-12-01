@@ -5,10 +5,7 @@ namespace eCommerce.Infrastructure.Repositories.Cart
 {
     public class CartRepository(AppDbContext context) : ICart
     {
-        public async Task SaveCheckoutHistory(IEnumerable<Achieve> checkout)
-        {
+        public async Task SaveCheckoutHistory(IEnumerable<Achieve> checkout)=>
             await context.CheckoutAchieve.AddRangeAsync(checkout);
-            //return await context.SaveChangesAsync();
-        }
     }
 }
