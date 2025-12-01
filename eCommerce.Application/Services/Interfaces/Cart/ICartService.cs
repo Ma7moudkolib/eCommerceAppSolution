@@ -4,7 +4,7 @@ namespace eCommerce.Application.Services.Interfaces.Cart
 {
     public interface ICartService
     {
-        Task<ServiceResponse> SaveCheckoutHistory(IEnumerable<CreateAchieve> achieves);
-        Task <ServiceResponse> Checkout(Checkout checkout);
+        Task<ServiceResponse> SaveCheckoutHistory(IEnumerable<CreateAchieve> achieves ,CancellationToken cancellationToken=default);
+        Task <ServiceResponse> Checkout(Checkout checkout,CancellationToken cancellationToken=default);
     }
 }
