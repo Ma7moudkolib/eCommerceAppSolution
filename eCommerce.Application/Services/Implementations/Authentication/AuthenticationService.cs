@@ -27,11 +27,13 @@ namespace eCommerce.Application.Services.Implementations.Authentication
         }
         public async Task<ServiceResponse> RegisterUser(CreateUser createUser)
         {
+            if (!isValidUserRegisteration(createUser))
+                return new ServiceResponse(false, "User Name or Email already exists");
             var userEntity =  _mapper.Map<AppUser>(createUser);
-
-            var result = await _userManager.CreateAsync(userEntity, userEntity.PasswordHash!);
+            
+            var result = await _userManager.CreateAsync(userEntity, createUser.Password!);
             if(!result.Succeeded)
-                return new ServiceResponse(false, "Failed while create user, please try later.");
+                return new ServiceResponse(false,result.ToString());
                
             return new ServiceResponse { Success = true , message = "Account Created!" }; 
         }
@@ -49,7 +51,7 @@ namespace eCommerce.Application.Services.Implementations.Authentication
             var claims = await GetClaims();
             var tokenOptions = GenerateTokenOptions(signingCredentials, claims);
             var token = new JwtSecurityTokenHandler().WriteToken(tokenOptions);
-            return new LoginResponse(true, token);
+            return new LoginResponse(true,massage:"Success Login",token);
         }
         private SigningCredentials GetSigningCredentials()
         {
@@ -81,6 +83,12 @@ namespace eCommerce.Application.Services.Implementations.Authentication
                 expires: DateTime.Now.AddMinutes(Convert.ToDouble(jwtSettings["expires"])),
                 signingCredentials: signingCredentials);
             return tokenOptions;
+        }
+
+        private bool isValidUserRegisteration(CreateUser createUser )
+        {
+            return  _userManager.FindByEmailAsync(createUser.Email!) != null 
+                &&  _userManager.FindByNameAsync(createUser.UserName) != null;
         }
 
     }
