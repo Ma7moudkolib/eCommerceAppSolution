@@ -1,6 +1,7 @@
 ﻿using eCommerce.Application.DTOs.Product;
 using eCommerce.Application.Services.Implementations;
 using eCommerce.Application.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel;
@@ -24,11 +25,13 @@ namespace eCommerce.API.Controllers
             return data == null ? Ok(data) : NotFound(data);
         }
         [HttpPost("addProduct")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> AddProduct(CreateProduct Product)
         {
             var result = await productService.AddProductAsync(Product);
             return result.Success? Ok(result) : BadRequest(result);
         }
+        [Authorize(Roles = "Admin")]
         [HttpPut("updateProduct")]
         public async Task<IActionResult> UpdateProduct(UpdateProduct Product)
         {
@@ -42,6 +45,7 @@ namespace eCommerce.API.Controllers
             return result.Success ? Ok(result) : BadRequest(result);
         }
         [HttpGet("products-by-category/{categoryId}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetProductsByCategory(int categoryId)
         {
             var products = await productService.GetProductsByCategoryIdAsync(categoryId);
