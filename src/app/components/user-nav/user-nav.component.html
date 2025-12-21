@@ -1,0 +1,29 @@
+<div class="card relative z-2">
+  <p-menubar [model]="items">
+    <ng-template pTemplate="start">
+      <div class="flex align-items-center gap-2 mr-4 cursor-pointer" routerLink="/">
+        <span class="text-2xl font-bold text-primary">🛍️ ShopHub</span>
+      </div>
+    </ng-template>
+
+    <ng-template pTemplate="end">
+      <div class="flex align-items-center gap-3">
+        <span class="p-input-icon-left hidden sm:block">
+          <i class="pi pi-search"></i>
+          <input type="text" pInputText placeholder="Search..." (input)="onSearch($event)" class="w-15rem" />
+        </span>
+
+        <button pButton icon="pi pi-shopping-cart" class="p-button-text p-button-rounded" pBadge value="2"></button>
+
+        <div
+          class="flex align-items-center gap-2 cursor-pointer hover:surface-100 p-2 border-round transition-duration-200"
+          (click)="menu.toggle($event)">
+          <p-avatar icon="pi pi-user" shape="circle" styleClass="bg-primary text-white"></p-avatar>
+          <span class="font-medium hidden md:block text-900">{{ authService.currentUser()?.username || 'Guest' }}</span>
+          <i class="pi pi-angle-down text-600 hidden md:block"></i>
+        </div>
+        <p-menu #menu [model]="userMenuItems" [popup]="true"></p-menu>
+      </div>
+    </ng-template>
+  </p-menubar>
+</div>

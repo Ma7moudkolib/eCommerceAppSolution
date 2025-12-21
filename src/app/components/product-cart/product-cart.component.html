@@ -1,0 +1,17 @@
+  @if (product(); as prod) {
+      <div class="card">
+        <img [src]="prod.image" [alt]="prod.title" />
+        <div class="card-content">
+          <h3>{{ prod.title }}</h3>
+          <p class="category">{{ prod.category }}</p>
+          <div class="rating">
+            <span class="stars">⭐ {{ prod.rating.rate }}</span>
+            <span class="count">({{ prod.rating.count }})</span>
+          </div>
+          <div class="footer">
+            <span class="price">${{ prod.price }}</span>
+            <button class="btn-cart">Add to Cart</button>
+          </div>
+        </div>
+      </div>
+    }

@@ -1,0 +1,38 @@
+<div class="home">
+  <!-- <app-user-nav /> Removed, handled by layout -->
+
+  <main class="main-content">
+    @if (isLoading()) {
+    <div class="loading flex justify-content-center align-items-center p-8">
+      <i class="pi pi-spin pi-spinner text-4xl text-primary"></i>
+      <p class="ml-3 text-xl">Loading products...</p>
+    </div>
+    } @else {
+    <!-- Categories -->
+    <div class="categories flex gap-2 overflow-auto pb-3 mb-4">
+      @for (cat of categories(); track cat.id) {
+      <button class="p-button p-component p-button-outlined p-button-rounded white-space-nowrap"
+        [class.p-button-primary]="selectedCategory() === cat.id"
+        [class.p-button-secondary]="selectedCategory() !== cat.id" (click)="selectCategory(cat.id)">
+        {{ cat.name }}
+      </button>
+      }
+    </div>
+
+    <!-- Products Grid -->
+    <div class="products grid">
+      @if (filteredProducts().length === 0) {
+      <div class="col-12 text-center p-8">
+        <div class="text-2xl text-600">No products found</div>
+      </div>
+      } @else {
+      @for (product of filteredProducts(); track product.id) {
+      <div class="col-12 sm:col-6 md:col-4 xl:col-3 p-2">
+        <app-product-cart [product]="product" />
+      </div>
+      }
+      }
+    </div>
+    }
+  </main>
+</div>

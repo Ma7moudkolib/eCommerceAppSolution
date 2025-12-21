@@ -1,0 +1,82 @@
+ .header {
+      background: white;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 15px 20px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .logo {
+      font-size: 24px;
+      font-weight: bold;
+      color: #667eea;
+      white-space: nowrap;
+    }
+    .search {
+      flex: 1;
+      max-width: 500px;
+    }
+    .search input {
+      width: 100%;
+      padding: 10px 15px;
+      border: 2px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    .search input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    .username {
+      font-weight: 500;
+      color: #555;
+    }
+    .btn-logout {
+      padding: 8px 16px;
+      background: #ef4444;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+    }
+    .btn-logout:hover {
+      background: #dc2626;
+    }
+    @media (max-width: 768px) {
+      .header-content {
+        flex-wrap: wrap;
+      }
+      .search {
+        order: 3;
+        max-width: 100%;
+        flex: 1 1 100%;
+      }
+    }
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* Authentication Styles */
+.auth-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+}
