@@ -42,7 +42,6 @@ namespace eCommerce.Infrastructure.Repositories.Authentication
             var _user = await GetUserByEmail(email);
             string? roleName = await roleManagement.GetUserRole(_user.Email!);
             List<Claim> claims = [
-                new Claim("FullName" , _user.FullName),
                 new Claim(ClaimTypes.NameIdentifier,_user.Id),
                 new Claim(ClaimTypes.Email,_user.Email!),
                 new Claim(ClaimTypes.Role , roleName!)
