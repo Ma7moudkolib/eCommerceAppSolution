@@ -22,7 +22,7 @@ namespace eCommerce.API.Controllers
         public async Task<IActionResult> GetProduct(int id )
         {
             var data = await productService.GetProductByIdAsync(id);
-            return data == null ? Ok(data) : NotFound(data);
+            return data == null ? NotFound(data) : Ok(data);
         }
         [HttpPost("addProduct")]
         [Authorize(Roles = "Admin")]
