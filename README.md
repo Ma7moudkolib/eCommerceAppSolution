@@ -42,7 +42,7 @@ A modern eCommerce platform built with ASP.NET Core (.NET 8) and Entity Framewor
 - `eCommerce.Domain`: Domain entities and business logic.
 - `eCommerce.Infrastructure`: Data access, EF Core context, and migrations.
 - `eCommerce.Application`: Application services and use cases.
-- `eCommerce.Web`: ASP.NET Core web application (API/UI).
+- `eCommerce.API`: ASP.NET Core web application.
 
 ## Database Seeding
 
