@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-namespace eCommerce.Infrastructure.Middleware
+namespace eCommerce.Application.Middleware
 {
     public class ExceptionHandlingMiddleware(RequestDelegate _next )
     {

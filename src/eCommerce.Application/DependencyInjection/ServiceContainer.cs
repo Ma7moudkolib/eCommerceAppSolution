@@ -6,7 +6,7 @@ using eCommerce.Application.Services.Interfaces;
 using eCommerce.Application.Services.Interfaces.Authentication;
 using eCommerce.Application.Services.Interfaces.Cart;
 using eCommerce.Application.Services.Interfaces.Logging;
-using eCommerce.Infrastructure.Middleware;
+using eCommerce.Application.Middleware;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Builder;

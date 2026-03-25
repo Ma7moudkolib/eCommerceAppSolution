@@ -1,6 +1,6 @@
 using eCommerce.Application.DependencyInjection;
 using eCommerce.Infrastructure.DependencyInjection;
-using eCommerce.Infrastructure.Middleware;
+using eCommerce.Application.Middleware;
 using Serilog;
 var builder = WebApplication.CreateBuilder(args);
 Log.Logger = new LoggerConfiguration()
